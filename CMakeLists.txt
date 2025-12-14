@@ -11,6 +11,7 @@ add_executable(LearnOpenGL
 target_include_directories(LearnOpenGL PRIVATE
     "${CMAKE_SOURCE_DIR}/include"
     "${CMAKE_SOURCE_DIR}/Dev/glfw-3.4/include"
+    "${CMAKE_SOURCE_DIR}/src"
 )
 
 target_link_directories(LearnOpenGL PRIVATE
