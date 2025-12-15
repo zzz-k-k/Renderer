@@ -7,6 +7,9 @@
     <ClCompile Include="D:\Renderer\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\Renderer\src\stb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\Renderer\CMakeLists.txt" />

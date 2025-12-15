@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(LearnOpenGL
     src/main.cpp
     src/glad.c
+    src/stb_image.cpp
 )
 
 target_include_directories(LearnOpenGL PRIVATE

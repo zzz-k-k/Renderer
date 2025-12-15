@@ -362,6 +362,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClCompile Include="D:\Renderer\src\main.cpp" />
     <ClCompile Include="D:\Renderer\src\glad.c" />
+    <ClCompile Include="D:\Renderer\src\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
