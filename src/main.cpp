@@ -215,9 +215,8 @@ int main()
     glfwSetScrollCallback(window, scroll_callback);
 
     //------------创建生成纹理对象---------
-    unsigned int texture1 = LoadTexture2D("container.jpg");
-    unsigned int texture2 = LoadTexture2D("awesomeface.png");
-    
+    unsigned int texture1 = LoadTexture2D("container2.png");
+    unsigned int specularMap = LoadTexture2D("container2_specular.png");
     
     while(!glfwWindowShouldClose(window))
     {
@@ -241,14 +240,8 @@ int main()
 
         processInput(window);
         
-        
         ourShader.use();
         ourShader.setFloat("u_Tiling", x);
-        
-        ourShader.setInt("texture1",0);
-        ourShader.setInt("texture2", 1); // 或者使用着色器类设置
-
-        
         
         // ===== ImGui per-frame begin =====
         ImGui_ImplOpenGL3_NewFrame();
@@ -284,24 +277,34 @@ int main()
         //位移
         trans = glm::translate(trans, pos);
         //旋转
-
+        
         float camX = sin(glfwGetTime()) * radius;
         float camZ = cos(glfwGetTime()) * radius;
-
-
-
+        
+        
+        
         ourShader.setMat4("transform",trans);
         
         glm::mat4 view = camera.GetViewMatrix(); 
         ourShader.setMat4("view",view);
-
+        
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)800.0f / (float)600.0f, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
-
-        ourShader.setVec3("lightColor",1.0f,1.0f,1.0f);
-
+        
+        
         ourShader.setVec3("lightPos", lightPos);
         ourShader.setVec3("viewPos",camera.Position);
+        
+        //材质
+        
+        ourShader.setInt("material.diffuse",0);
+        ourShader.setInt("material.specular", 1);
+        ourShader.setFloat("material.shininess", 32.0f);
+
+
+        ourShader.setVec3("light.ambient",  0.2f, 0.2f, 0.2f);
+        ourShader.setVec3("light.diffuse",  0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
+        ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f); 
 
         //灯的模型
         glm::mat4 model=glm::mat4();
@@ -323,8 +326,9 @@ int main()
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
+
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
         
         ourShader.use();
         glBindVertexArray(VAO);
