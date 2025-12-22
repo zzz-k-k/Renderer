@@ -6,6 +6,7 @@
 #include<stb_image.h>
 
 #include<ui.h>
+#include<grid.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,6 +28,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f; 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 UI ui;
+Grid grid;
 
 float vertices[] = 
 {
@@ -123,6 +125,7 @@ bool usingFlashlight=false;
 
 
 
+
 int main()
 {
     glfwInit();
@@ -197,8 +200,13 @@ int main()
 
     Shader ourShader("../../src/shader/shader.vs", "../../src/shader/shader.fs");
     Shader lampShader("../../src/shader/lightShader.vs","../../src/shader/lightShader.fs");
-    
+    Shader gridShader("../../src/gridshader/grid.vs",
+                  "../../src/gridshader/grid.fs");
+
     ui.UIinit(window);
+
+    Grid grid;
+    grid.init(gridShader, 50.0f);
 
     //启用深度缓冲
     glEnable(GL_DEPTH_TEST);
@@ -351,20 +359,6 @@ int main()
         
         ourShader.use();
         glBindVertexArray(VAO);
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        // glDrawArrays(GL_TRIANGLES, 0, 36);
-        // for (unsigned int i = 1; i < 10; i++)
-        // {
-        //     // calculate the model matrix for each object and pass it to shader before drawing
-        //     glm::mat4 model = glm::mat4(1.0f);
-        //     model = glm::translate(model, cubePositions[i]);
-        //     float angle = 20.0f * i;
-        //     model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        //     ourShader.setMat4("transform", model);
-
-        //     glDrawArrays(GL_TRIANGLES, 0, 36);
-        // }
 
         ourShader.setInt("material.texture_diffuse1", 0);
         ourShader.setInt("material.texture_specular1", 1);
@@ -387,7 +381,11 @@ int main()
 
         // ===== ImGui draw =====
         
+
         ui.DrawUI();
+
+        lampShader.setMat4("model", glm::mat4(1.0f));
+        grid.draw(view, projection, camera.Position);
         
         glfwSwapBuffers(window);//显示窗口
         glfwPollEvents(); 
