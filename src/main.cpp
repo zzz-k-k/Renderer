@@ -5,9 +5,7 @@
 #include<cmath>
 #include<stb_image.h>
 
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
+#include<ui.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,6 +26,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f; 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+UI ui;
 
 float vertices[] = 
 {
@@ -199,20 +198,7 @@ int main()
     Shader ourShader("../../src/shader/shader.vs", "../../src/shader/shader.fs");
     Shader lampShader("../../src/shader/lightShader.vs","../../src/shader/lightShader.fs");
     
-    
-    // ===== ImGui init =====
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); 
-    (void)io;
-    io.FontGlobalScale = 1.5f; 
-    
-    ImGui::StyleColorsDark();
-    
-    // 绑定到 GLFW + OpenGL3
-    ImGui_ImplGlfw_InitForOpenGL(window, false);
-    ImGui_ImplOpenGL3_Init("#version 330");
-    
+    ui.UIinit(window);
 
     //启用深度缓冲
     glEnable(GL_DEPTH_TEST);
@@ -259,30 +245,7 @@ int main()
         ourShader.use();
         ourShader.setFloat("u_Tiling", x);
         
-        // ===== ImGui per-frame begin =====
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
         
-        // ===== 这里写你的调试面板 =====
-        ImGui::Begin("Debug");
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::Checkbox("Wireframe", &wireframe);
-        ImGui::SliderFloat("x",&x,0.0f,5.0f);
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::SliderFloat("zrotation", &zrotation, 0.0f,360.0f);
-            ImGui::SliderFloat("Xrotation",&xrotation,-180.0f,180.0f);
-            ImGui::SliderFloat("yrotation",&yrotation,-180.0f,180.0f);
-            ImGui::DragFloat3("scale", glm::value_ptr(scale), 0.01f);
-            ImGui::DragFloat3("position", glm::value_ptr(pos), 0.01f);
-        }
-        if (ImGui::CollapsingHeader("lightTransform", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::DragFloat3("lightPos",glm::value_ptr(lightPos),0.01f);
-        }
-        ImGui::Checkbox("usingFlashlight",&usingFlashlight);
-        ImGui::End();
         
         
         //变换
@@ -423,9 +386,8 @@ int main()
          }
 
         // ===== ImGui draw =====
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         
+        ui.DrawUI();
         
         glfwSwapBuffers(window);//显示窗口
         glfwPollEvents(); 
@@ -433,10 +395,7 @@ int main()
         
     }
 
-    //释放imgui
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    ui.ReleaseUI();
 
     glfwTerminate();
 

@@ -1,0 +1,59 @@
+#ifndef UI_H
+#define UI_H
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
+#include <GLFW/glfw3.h>
+
+
+class UI
+{
+public:
+        // ===== ImGui init =====
+    void UIinit(GLFWwindow* window)
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); 
+        (void)io;
+        io.FontGlobalScale = 1.5f; 
+        
+        ImGui::StyleColorsDark();
+        
+        // 绑定到 GLFW + OpenGL3
+        ImGui_ImplGlfw_InitForOpenGL(window, false);
+        ImGui_ImplOpenGL3_Init("#version 330");
+    }
+
+    void DrawUI()
+    {
+        // ===== ImGui per-frame begin =====
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        
+        // ===== 这里写你的调试面板 =====
+        ImGui::Begin("Debug");
+        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+
+    //释放imgui
+    void ReleaseUI()
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+};
+
+
+
+#endif
