@@ -4,15 +4,19 @@ project(LearnOpenGL)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(LearnOpenGL
-    src/main.cpp
-    src/glad.c
-    src/stb_image.cpp
+src/main.cpp
+src/glad.c
+src/stb_image.cpp
+Dev/ImGuizmo/ImGuizmo.cpp
 )
+
+target_compile_definitions(LearnOpenGL PRIVATE IMGUI_DEFINE_MATH_OPERATORS)
 
 target_include_directories(LearnOpenGL PRIVATE
     "${CMAKE_SOURCE_DIR}/include"
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_SOURCE_DIR}/Dev/glm"
+    "${CMAKE_SOURCE_DIR}/Dev/ImGuizmo"
 )
 
 add_subdirectory(Dev/glfw-3.4)

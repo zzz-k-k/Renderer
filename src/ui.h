@@ -5,13 +5,18 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include "ImGuiZmo.h"
+#include "build.h"
+
 #include <GLFW/glfw3.h>
+
+bool showBuildWindow=false;
 
 
 class UI
 {
-public:
-        // ===== ImGui init =====
+    public:
+    // ===== ImGui init =====
     void UIinit(GLFWwindow* window)
     {
         IMGUI_CHECKVERSION();
@@ -21,28 +26,50 @@ public:
         io.FontGlobalScale = 1.5f; 
         
         ImGui::StyleColorsDark();
-        
+
         // 绑定到 GLFW + OpenGL3
         ImGui_ImplGlfw_InitForOpenGL(window, false);
         ImGui_ImplOpenGL3_Init("#version 330");
     }
-
-    void DrawUI()
+    void BeginUI()
     {
-        // ===== ImGui per-frame begin =====
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        
-        // ===== 这里写你的调试面板 =====
-        ImGui::Begin("Debug");
-        ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-        ImGui::End();
 
+    }
+
+    void DrawUI(BuildSystem& build)
+    {
+        
+        if(ImGui::BeginMainMenuBar())
+        {
+            if(ImGui::BeginMenu("Window"))
+            {
+                ImGui::MenuItem("build",nullptr,&showBuildWindow);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+        if(showBuildWindow)
+        {
+            ImGui::Begin("build",&showBuildWindow);
+            if(ImGui::Button("cube"))
+            {
+                SceneObject obj;
+                obj.id=build.nextId++;
+                obj.model=glm::mat4(1.0f);
+                obj.selected=false;
+                build.objects.push_back(obj);
+            }
+            ImGui::End();
+        }
+    }
+    void EndUI()
+    {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
-
 
     //释放imgui
     void ReleaseUI()

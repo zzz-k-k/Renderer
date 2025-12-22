@@ -15,6 +15,9 @@
 #include <camera.h>
 #include<shader.h>
 #include<model.h>
+#include<build.h>
+#include<raycaster.h>
+#include "ImGuizmo.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -29,51 +32,9 @@ float lastFrame = 0.0f;
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 UI ui;
 Grid grid;
+BuildSystem build;
+Raycaster raycaster;
 
-float vertices[] = 
-{
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.0f,  0.0f, -1.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,0.0f,  0.0f, -1.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,0.0f,  0.0f, -1.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,0.0f,  0.0f, -1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,0.0f,  0.0f, -1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,0.0f,  0.0f, -1.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,0.0f,  0.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,0.0f,  0.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,  0.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,  0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,0.0f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,0.0f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,-1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,-1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,-1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,-1.0f,  0.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,-1.0f,  0.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,-1.0f,  0.0f,  0.0f,
-
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,1.0f,  0.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,1.0f,  0.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,1.0f,  0.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,1.0f,  0.0f,  0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 1.0f,0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,0.0f, -1.0f,  0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,0.0f, -1.0f,  0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,0.0f, -1.0f,  0.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,0.0f,  1.0f,  0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,0.0f,  1.0f,  0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,0.0f,  1.0f,  0.0f
-};
 
 unsigned int indices[]=
 {
@@ -153,43 +114,16 @@ int main()
 
     Model ourModel("backpack/backpack.obj");
 
+    //初始化默认立方体
+    build.cube.Init();
 
-    //-----------创建顶点数组对象------------
-    //使用顶点数组对象
-    unsigned int VAO,VBO,EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1,&EBO);
-    // 1. 绑定VAO_sqr
-    glBindVertexArray(VAO);
-    // 2. 把顶点数组复制到缓冲中供OpenGL使用
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // 3. 设置顶点属性指针
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    //设置颜色
-    // glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    //传入法线
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     //设置灯的数据
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
     glBindVertexArray(lightVAO);
     // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, build.cube.VBO);
     // 设置灯立方体的顶点属性（对我们的灯来说仅仅只有位置数据）
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -358,13 +292,39 @@ int main()
         glBindTexture(GL_TEXTURE_2D, specularMap);
         
         ourShader.use();
-        glBindVertexArray(VAO);
 
         ourShader.setInt("material.texture_diffuse1", 0);
         ourShader.setInt("material.texture_specular1", 1);
 
-        ourModel.Draw(ourShader);
-        
+        //ourModel.Draw(ourShader);
+
+        for (auto& obj : build.objects)
+        {
+            ourShader.setMat4("transform", obj.model);
+            build.cube.Draw();
+            //选中时显示线框
+            if (obj.selected)
+            {
+                glDisable(GL_DEPTH_TEST);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+                lampShader.use();
+                lampShader.setMat4("view", view);
+                lampShader.setMat4("projection", projection);
+
+                glm::mat4 outline = obj.model;
+                outline = glm::scale(outline, glm::vec3(1.03f)); // 稍微放大
+                lampShader.setMat4("model", outline);
+
+                build.cube.Draw();
+
+                // 恢复状态（如果你有 wireframe 开关，恢复它）
+                glPolygonMode(GL_FRONT_AND_BACK, wireframe ? GL_LINE : GL_FILL);
+                glEnable(GL_DEPTH_TEST);
+            }
+        }
+
+
         //绘制光源
         lampShader.use();
         lampShader.setMat4("view", view);
@@ -380,9 +340,39 @@ int main()
          }
 
         // ===== ImGui draw =====
+        ui.BeginUI();
+        ImGuizmo::BeginFrame();
+        ui.DrawUI(build);
         
+        //调用imguizmo
+        if (build.selectedId != -1)
+        {
+            // 找到选中的对象
+            for (auto& obj : build.objects)
+            {
+                if (obj.id == build.selectedId)
+                {
+                    ImGuizmo::SetOrthographic(false);
+                    ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
 
-        ui.DrawUI();
+                    // ImGuizmo 需要屏幕尺寸
+                    ImGuiIO& io = ImGui::GetIO();
+                    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+                    // 使用相机矩阵
+                    ImGuizmo::Manipulate(
+                        glm::value_ptr(view),
+                        glm::value_ptr(projection),
+                        ImGuizmo::TRANSLATE,
+                        ImGuizmo::WORLD,
+                        glm::value_ptr(obj.model)
+                    );
+
+                    break;
+                }
+            }
+        }
+        ui.EndUI();
 
         lampShader.setMat4("model", glm::mat4(1.0f));
         grid.draw(view, projection, camera.Position);
@@ -451,6 +441,23 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        // 如果 ImGui 正在使用鼠标，就不选
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
+        double mx, my;
+        glfwGetCursorPos(window, &mx, &my);
+
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),
+            (float)width / (float)height, 0.1f, 100.0f);
+
+        raycaster.PickObject(mx, my, width, height, view, projection, build);
+    }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)

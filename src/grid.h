@@ -9,7 +9,8 @@
 
 class Grid {
 public:
-    void init(Shader& shaderRef, float half = 50.0f) {
+    void init(Shader& shaderRef, float half = 50.0f) 
+    {
         shader = &shaderRef;
         halfSize = half;
 
