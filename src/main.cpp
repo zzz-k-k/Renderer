@@ -35,6 +35,8 @@ Grid grid;
 BuildSystem build;
 Raycaster raycaster;
 
+ImGuizmo::OPERATION gizmoOp=ImGuizmo::TRANSLATE;
+ImGuizmo::MODE gizmoMode=ImGuizmo::WORLD;
 
 unsigned int indices[]=
 {
@@ -342,7 +344,7 @@ int main()
         // ===== ImGui draw =====
         ui.BeginUI();
         ImGuizmo::BeginFrame();
-        ui.DrawUI(build);
+        ui.DrawUI(build,gizmoOp,gizmoMode);
         
         //调用imguizmo
         if (build.selectedId != -1)
@@ -363,8 +365,8 @@ int main()
                     ImGuizmo::Manipulate(
                         glm::value_ptr(view),
                         glm::value_ptr(projection),
-                        ImGuizmo::TRANSLATE,
-                        ImGuizmo::WORLD,
+                        gizmoOp,
+                        gizmoMode,
                         glm::value_ptr(obj.model)
                     );
 
