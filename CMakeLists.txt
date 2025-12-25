@@ -8,6 +8,9 @@ src/main.cpp
 src/glad.c
 src/stb_image.cpp
 Dev/ImGuizmo/ImGuizmo.cpp
+Dev/nfd/src/nfd_win.cpp
+Dev/nfd/src/nfd_common.c
+Dev/nfd/src/nfd_win.cpp
 )
 
 target_compile_definitions(LearnOpenGL PRIVATE IMGUI_DEFINE_MATH_OPERATORS)
@@ -17,6 +20,7 @@ target_include_directories(LearnOpenGL PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
     "${CMAKE_SOURCE_DIR}/Dev/glm"
     "${CMAKE_SOURCE_DIR}/Dev/ImGuizmo"
+    "${CMAKE_SOURCE_DIR}/Dev/nfd/src/include"
 )
 
 add_subdirectory(Dev/glfw-3.4)

@@ -7,6 +7,7 @@
 #include<glad/glad.h>
 
 #include<memory>
+#include<string>
 #include"model.h"
 
 enum class ObjType{Cube,Light,Model};
@@ -109,6 +110,16 @@ public:
     std::shared_ptr<Model> loadModel(const std::string& path)
     {
         return std::make_shared<Model>(path.c_str());
+    }
+    void ImportModel(const std::string& path)
+    {
+        SceneObject obj;
+        obj.id=nextId++;
+        obj.model=glm::mat4(1.0f);
+        obj.selected=false;
+        obj.type=ObjType::Model;
+        obj.modelAsset=std::make_shared<Model>(path.c_str());
+        objects.push_back(obj);
     }
 };
 

@@ -7,6 +7,7 @@
 
 #include "ImGuizmo.h"
 #include "build.h"
+#include "nfd.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -16,7 +17,7 @@
 #include<string>
 
 bool showBuildWindow=false;
-bool showFileWindwo=false;
+
 
 class UI
 {
@@ -56,7 +57,16 @@ class UI
             }
             if(ImGui::BeginMenu("file"))
             {
-                ImGui::MenuItem("import",nullptr,&showFileWindwo);
+                if(ImGui::MenuItem("import"))
+                {
+                    nfdchar_t* outPath=nullptr;
+                    nfdresult_t result=NFD_OpenDialog("obj;fbx;gltf",nullptr,&outPath);
+                    if(result==NFD_OKAY)
+                    {
+                        build.ImportModel(outPath);
+                        free(outPath);
+                    }
+                }
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -84,22 +94,6 @@ class UI
             }
             ImGui::End();
             
-        }
-        if(showFileWindwo)
-        {
-            if(ImGui::MenuItem("import"))
-            {
-                const std::string path="backpack/backpack.obj";
-
-                SceneObject obj;
-                obj.id=build.nextId++;
-                obj.model=glm::mat4(1.0f);
-                obj.selected=false;
-                obj.type=ObjType::Model;
-                obj.modelAsset=std::make_shared<Model>(path.c_str());
-
-                build.objects.push_back(obj);
-            }
         }
 
         //右侧常驻菜单

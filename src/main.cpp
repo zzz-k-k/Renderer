@@ -26,6 +26,7 @@ unsigned int LoadTexture2D(const char* path);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void drop_callback(GLFWwindow* window,int count, const char** paths);
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f; 
@@ -125,6 +126,9 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
+    
+    //有文件拖拽时
+    glfwSetDropCallback(window, drop_callback);
 
     //------------创建生成纹理对象---------
     unsigned int texture1 = LoadTexture2D("container2.png");
@@ -437,4 +441,13 @@ unsigned int LoadTexture2D(const char* path)
     stbi_image_free(data);
 
     return tex;
+}
+
+
+void drop_callback(GLFWwindow* window,int count, const char** paths)
+{
+    for(int i=0;i<count;i++)
+    {
+        build.ImportModel(paths[i]);
+    }
 }
