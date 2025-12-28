@@ -67,6 +67,10 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main()
 {
+    //获取alpha
+    vec4 texColor = texture(material.texture_diffuse1, TexCoord);
+    float alpha = texColor.a;
+
     // 属性
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
@@ -79,7 +83,7 @@ void main()
     // 第三阶段：聚光
     //result += CalcSpotLight(spotLight, norm, FragPos, viewDir);    
 
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, alpha);
     
 }
 

@@ -19,6 +19,9 @@
 #include<raycaster.h>
 #include "ImGuizmo.h"
 
+#include<algorithm>
+#include<vector>
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -84,8 +87,9 @@ int main()
 
     Model ourModel("backpack/backpack.obj");
 
-    //初始化默认立方体
+    //初始化默认图形
     build.cube.Init();
+    build.quad.Init();
 
     glm::mat4 trans;
 
@@ -112,7 +116,10 @@ int main()
     Grid grid;
     grid.init(gridShader, 50.0f);
 
-    //启用深度缓冲
+    //启用混合并设置对应的混合函数
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     //启用深度缓冲
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -245,9 +252,12 @@ int main()
         ourShader.setInt("material.texture_diffuse1", 0);
         ourShader.setInt("material.texture_specular1", 1);
 
-        // 第一遍：绘制所有物体，选中的写入模板
+        // 第一遍：绘制所有不透明物体
         for (auto& obj : build.objects)
         {
+            //跳过透明物体
+            if(obj.type==ObjType::Image)continue;
+
             // 默认不写入模板
             glStencilMask(0x00);
 
@@ -273,15 +283,60 @@ int main()
                 ourShader.setMat4("transform",obj.model);
                 obj.modelAsset->Draw(ourShader);
             }
-            else
+            
+            else //cube
             {
                 ourShader.use();
                 ourShader.setMat4("transform", obj.model);
                 build.cube.Draw();
             }
         }
+        //绘制透明物体
+        //收集透明物体
+        std::vector<SceneObject*> transparentObjects;
+        for(auto& obj:build.objects)
+        {
+            if(obj.type==ObjType::Image)
+            {
+                transparentObjects.push_back(&obj);
+            }
+        }
+        //按离摄像机的距离从远到近排序
+        std::sort(transparentObjects.begin(),transparentObjects.end(),
+                [](SceneObject* a,SceneObject* b)
+            {
+                glm::vec3 posA=glm::vec3(a->model[3]);
+                glm::vec3 posB=glm::vec3(b->model[3]);
+                glm::vec3 diffA = camera.Position - posA;
+                glm::vec3 diffB = camera.Position - posB;
+                float distA = glm::length(diffA);
+                float distB = glm::length(diffB);
+                return distA>distB;
+            });
+        glDepthMask(GL_FALSE);
+        //绘制排序后的透明物体
+        for(auto* obj:transparentObjects)
+        {
+            if(obj->textureID==0&&!obj->texturePath.empty())
+                obj->textureID=LoadTexture2D(obj->texturePath.c_str());
 
-        // 第二遍：绘制所有选中物体的轮廓
+            glStencilMask(0x00);
+            if(obj->selected)
+            {
+                glStencilFunc(GL_ALWAYS,1,0xFF);
+                glStencilMask(0xFF);
+            }
+            //绘制
+            ourShader.use();
+            ourShader.setMat4("transform", obj->model);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, obj->textureID);
+            ourShader.setInt("material.texture_diffuse1", 0);
+            build.quad.Draw();
+        }
+        glDepthMask(GL_TRUE);
+
+        // 绘制所有选中物体的轮廓
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         glStencilMask(0x00);
         glDepthMask(GL_FALSE); // 禁止写入深度，但仍进行深度测试
@@ -301,6 +356,10 @@ int main()
                 if(obj.type==ObjType::Model&&obj.modelAsset)
                 {
                     obj.modelAsset->Draw(lampShader);
+                }
+                else if(obj.type==ObjType::Image)
+                {
+                    build.quad.Draw();
                 }
                 else
                 {

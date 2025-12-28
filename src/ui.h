@@ -92,6 +92,16 @@ class UI
                 obj.type=ObjType::Light;
                 build.objects.push_back(obj);
             }
+            if(ImGui::Button("image"))
+            {
+                nfdchar_t* outPath=nullptr;
+                    nfdresult_t result=NFD_OpenDialog("png,jpg",nullptr,&outPath);
+                    if(result==NFD_OKAY)
+                    {
+                        build.CreateImage(outPath);
+                        free(outPath);
+                    }
+            }
             ImGui::End();
             
         }

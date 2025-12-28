@@ -10,7 +10,7 @@
 #include<string>
 #include"model.h"
 
-enum class ObjType{Cube,Light,Model};
+enum class ObjType{Cube,Light,Model,Image};
 struct SceneObject
 {
     glm::mat4 model;
@@ -19,6 +19,9 @@ struct SceneObject
     ObjType type=ObjType::Cube;
 
     std::shared_ptr<Model> modelAsset;
+
+    std::string texturePath;
+    unsigned int textureID; 
 
 };
 
@@ -97,6 +100,61 @@ struct CubeMesh
     }
 };
 
+struct Quad
+{
+public:
+    unsigned int VAO,VBO,EBO;
+    void Init()
+    {
+        // float vertices[]=
+        // {
+        //     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        //     0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+        //     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+        //     0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        //     1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        //     1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+        // };
+        float vertices[] = 
+        {
+            // 位置              法线              UV
+            -0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,  // 左上
+            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f,  // 左下
+            0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,  // 右下
+            -0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f,  // 左上
+            0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,  // 右下
+            0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f   // 右上
+        };
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // glEnableVertexAttribArray(0);
+        // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        // glEnableVertexAttribArray(1);
+        // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        // glBindVertexArray(0);
+        
+        // 位置
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // 法线
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        // UV
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+    }
+    void Draw()
+    {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES,0,6);
+        glBindVertexArray(0);
+    }
+};
+
 class BuildSystem
 {
 private:
@@ -106,6 +164,7 @@ public:
     int nextId=1;
     int selectedId=-1;
     CubeMesh cube;
+    Quad quad;
 
     std::shared_ptr<Model> loadModel(const std::string& path)
     {
@@ -119,6 +178,17 @@ public:
         obj.selected=false;
         obj.type=ObjType::Model;
         obj.modelAsset=std::make_shared<Model>(path.c_str());
+        objects.push_back(obj);
+    }
+    void CreateImage(const char* imagePath)
+    {
+        SceneObject obj;
+        obj.id=nextId++;
+        obj.model=glm::mat4(1.0f);
+        obj.selected=false;
+        obj.type=ObjType::Image;
+        obj.texturePath = imagePath;
+        obj.textureID = 0; 
         objects.push_back(obj);
     }
 };
